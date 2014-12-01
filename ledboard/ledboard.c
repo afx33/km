@@ -1,7 +1,7 @@
 /*
  * ledboard.c - ledboard gpio support (piborg.org)
  *
- * author: I. Leontovich
+ * author: afx33sd
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
