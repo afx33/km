@@ -1,0 +1,49 @@
+# To build modules outside of the kernel tree, we run "make"
+# in the kernel source tree; the Makefile these then includes this
+# Makefile once again.
+# This conditional selects whether we are being included from the
+# kernel Makefile or not.
+#
+#
+#MODNAME := "ledboard"
+#MODDEF :=  -D"KBUILD_MODNAME=$(MODNAME)"
+
+
+ARCH ?= arm
+CROSS_COMPILE ?= "/usr/bin/armv6j-hardfloat-linux-gnueabi-"
+
+#EXTRA_CFLAGS += $(MODDEF) 
+#EXTRA_CFLAGS += -D"DEBUG=1"
+
+#CPPFLAGS+="-DDEBUG=1"
+
+ifneq ($(KERNELRELEASE),)    
+	obj-m := ledboard.o
+modules:
+	$(MAKE) ARCH=$(ARCH) modules
+modules_install:
+	$(MAKE) ARCH=$(ARCH) modules install
+else
+
+	obj-m := ledboard.o 
+	# Assume the source tree is where the running kernel was built    
+	# You should set KERNELDIR in the environment if it's elsewhere    
+	# KERNELDIR ?= /lib/modules/$(shell uname -r)/build    
+	KERNELDIR ?= /opt/linux
+	# The current directory is passed to sub-makes as argument    
+	PWD := $(shell pwd)
+modules:	
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+modules_install:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules_install
+endif
+
+clean:
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions
+
+.PHONY: 
+	modules modules_install clean    # called from kernel build system: just declare what our modules are    
+
+#obj-m := hello.o hellop.o seq.o jit.o jiq.o sleepy.o complete.o silly.o faulty.o kdatasize.o kdataalign.o
+#make ARCH="arm" CROSS_COMPILE="/usr/bin/armv6j-hardfloat-linux-gnueabi-" -C /opt/linux/ M=`pwd` modules
+
